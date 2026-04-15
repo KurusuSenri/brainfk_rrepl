@@ -86,18 +86,28 @@ gen_jmp_tbl <- function(code) {
 
 # print user friendly registers
 dbg_print_reg <- function(ctx) {
-  cat(sprintf("ptr: %04d val: %04d pc: %04d\n", ctx$ptr, ctx$mem[ctx$ptr], ctx$pc))
+  cat(sprintf("ptr: %04d val: %04d pc: %04d\n", ctx$ptr - 1, ctx$mem[ctx$ptr], ctx$pc))
 }
 
 # print user friendly memory
 dbg_print_mem <- function(ctx) {
+  cells <- 8
   mem_len <- length(ctx$mem)
-  num_row <- mem_len %/% 8
+  num_row <- mem_len %/% cells
   cat("mem:\n")
   for(row in 1:num_row){
-    cat(sprintf("[%04d] ", (row - 1) * 8))
-    for(col in 1:8){
-      cat(sprintf("%04d ", ctx$mem[(row - 1) * 8 + col]))
+    cat(sprintf("[%04d] ", (row - 1) * cells))
+    for(col in 1:cells){
+      cat(sprintf("%04d ", ctx$mem[(row - 1) * cells + col]))
+    }
+    cat(" | ")
+    for(col in 1:cells) {
+      idx <- (row - 1) * cells + col
+      if (idx <= mem_len) {
+        val <- ctx$mem[idx]
+        char <- if(val >= 32 && val <= 126) intToUtf8(val) else "."
+        cat(char)
+      }
     }
     cat("\n")
   }
@@ -105,8 +115,24 @@ dbg_print_mem <- function(ctx) {
 
 # print instructions and jump table
 dbg_print_ins <- function(ctx) {
+  ins_vec <- ctx$ins
+  len <- length(ins_vec)
+  cells <- 32
   cat("ins:\n")
-  cat(ctx$ins, "\n", sep = "")
+  num_rows <- ceiling(len / cells)
+  for (row in 1:num_rows) {
+    cat(sprintf("[%04d] ", (row - 1) * cells))
+    for (col in 1:cells) {
+      idx <- (row - 1) * cells + col
+      if (idx <= len) {
+        cat(ins_vec[idx])
+        if (col %% 4 == 0 && col < cells) {
+          cat(" ")
+        }
+      }
+    }
+    cat("\n")
+  }
   
   cat("jmp_tbl:\n")
   active_indices <- which(ctx$jmp_tbl != 0)

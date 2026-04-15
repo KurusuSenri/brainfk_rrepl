@@ -1,6 +1,6 @@
 list.files("R/", full.names = TRUE) |> sapply(source)
 
-brainfk <- function(input_str) {
+interpret <- function(input_str) {
   ctx <- init()
   ctx <- load_ins(ctx, tokenize_bf(input_str))
   ctx <- eval(ctx)
@@ -50,6 +50,8 @@ repl <- function() {
 }
 
 rrepl_helloworld <- "
-++++++++++[>+++++ +++++<-] ignoreabcdefg>++++.---.+++++ ++..+++.>>>+++[>+++++ +++++<-]
->++.<<<<+++++ +++.----- ---.+++.----- -.----- ---.>>+++++ +++++.
+++++++++++[>+++++ +++++<-] ignoreabcdefg>+++
++.---.+++++ ++..+++.>>>+++[>+++++ +++++<-]
+>++.<<<<+++++ +++.----- ---.+++.----- -.----- ---.>>+++++ +++
+++.++++
 "
