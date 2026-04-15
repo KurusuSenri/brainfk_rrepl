@@ -1,6 +1,9 @@
 # increases memory pointer, or moves the pointer to the right 1 block
 op_inc_ptr <- function(ctx) {
   ctx$ptr <- ctx$ptr + 1
+  if (ctx$ptr > length(ctx$mem)) {
+    ctx$mem <- c(ctx$mem, integer(16)) 
+  }
   ctx$pc <- ctx$pc + 1
   return(ctx)
 }
@@ -8,6 +11,9 @@ op_inc_ptr <- function(ctx) {
 # decreases memory pointer, or moves the pointer to the left 1 block
 op_dec_ptr <- function(ctx) {
   ctx$ptr <- ctx$ptr - 1
+  if (ctx$ptr < 1) {
+    stop(paste("negative index at PC"))
+  }
   ctx$pc <- ctx$pc + 1
   return(ctx)
 }
@@ -59,7 +65,7 @@ op_get_chr <- function(ctx) {
 op_put_chr <- function(ctx) {
   chr_ascii <- ctx$mem[ctx$ptr]
   chr <- intToUtf8(chr_ascii)
-  print(chr)
+  cat(chr)
   ctx$pc <- ctx$pc + 1
   return(ctx)
 }

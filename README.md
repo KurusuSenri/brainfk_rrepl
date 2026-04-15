@@ -11,6 +11,8 @@ code <- "your brainfk code goes here"
 brainfk(code)
 ```
 
+![](./demo_interpret.png)  
+
 To enter REPL:
 
 ```R
@@ -18,4 +20,5 @@ source("main.R")
 repl()
 ```
 
-![demo](./demo.png)  
+![](./demo_repl.png)  
+

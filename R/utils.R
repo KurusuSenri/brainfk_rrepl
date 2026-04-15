@@ -1,7 +1,7 @@
 # initialize an empty context
 init <- function() {
   ctx <- list(
-    mem = integer(64),
+    mem = integer(16),
     ptr = 1,
     pc = 1,
     ins = c(),
@@ -82,4 +82,45 @@ gen_jmp_tbl <- function(code) {
     }
   }
   return(jmp_tbl)
+}
+
+# print user friendly registers
+dbg_print_reg <- function(ctx) {
+  cat(sprintf("ptr: %04d val: %04d pc: %04d\n", ctx$ptr, ctx$mem[ctx$ptr], ctx$pc))
+}
+
+# print user friendly memory
+dbg_print_mem <- function(ctx) {
+  mem_len <- length(ctx$mem)
+  num_row <- mem_len %/% 8
+  cat("mem:\n")
+  for(row in 1:num_row){
+    cat(sprintf("[%04d] ", (row - 1) * 8))
+    for(col in 1:8){
+      cat(sprintf("%04d ", ctx$mem[(row - 1) * 8 + col]))
+    }
+    cat("\n")
+  }
+}
+
+# print instructions and jump table
+dbg_print_ins <- function(ctx) {
+  cat("ins:\n")
+  cat(ctx$ins, "\n", sep = "")
+  
+  cat("jmp_tbl:\n")
+  active_indices <- which(ctx$jmp_tbl != 0)
+  for (i in active_indices) {
+    if (i < ctx$jmp_tbl[i]) {
+      cat(sprintf("[%04d]:[%04d]\n", i - 1, ctx$jmp_tbl[i] - 1))
+    }
+  }
+}
+
+# print all context
+dbg_print <- function(ctx) {
+  cat("\n")
+  dbg_print_reg(ctx)
+  dbg_print_mem(ctx)
+  dbg_print_ins(ctx)
 }
