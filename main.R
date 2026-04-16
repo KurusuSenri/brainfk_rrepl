@@ -9,19 +9,22 @@ interpret <- function(input_str) {
 
 repl <- function() {
   ctx <- init()
-  cat("[q]uit, [r]egisters, [i]nstructions, [p]rint_all\n")
+  cat("[q]uit, [r]egisters, [i]nstructions, [p]rint_all, [u]ndo\n")
   while (TRUE) {
     input_str <- readline(">>> ")
     if (input_str == "q") {
       dbg_print(ctx)
       break
-    } else if (input_str == "r"){
+    } else if (input_str == "r") {
       dbg_print_reg(ctx)
-    } else if (input_str == "m"){
+    } else if (input_str == "m") {
       dbg_print_mem(ctx)
-    } else if (input_str == "i"){
+    } else if (input_str == "i") {
       dbg_print_ins(ctx)
-    } else if (input_str == "p"){
+    } else if (input_str == "p") {
+      dbg_print(ctx)
+    } else if (input_str == "u") {
+      ctx <- load_history(ctx)
       dbg_print(ctx)
     } else {
       ins <- tokenize_bf(input_str)
@@ -30,7 +33,7 @@ repl <- function() {
       }
       if (chk_bkt_map(ins) > 0) {
         while (TRUE) {
-          ins <- c(ins, tokenize_bf(readline("+++ ")))
+          ins <- c(ins, tokenize_bf(readline("... ")))
           map <- chk_bkt_map(ins)
           if (map == 0) {
             break
@@ -42,6 +45,7 @@ repl <- function() {
       } else if (chk_bkt_map(ins) < 0) {
         stop("ummapped brackets")
       }
+      ctx <- save_history(ctx)
       ctx <- load_ins(ctx, ins)
       ctx <- eval(ctx)
       dbg_print(ctx)
@@ -50,8 +54,7 @@ repl <- function() {
 }
 
 rrepl_helloworld <- "
-++++++++++[>+++++ +++++<-] ignoreabcdefg>+++
-+.---.+++++ ++..+++.>>>+++[>+++++ +++++<-]
+++++++++++[>+++++ +++++<-] ignoreabcdefg>++++.---.+++++ ++..+++.>>>+++[>+++++ +++++<-]
 >++.<<<<+++++ +++.----- ---.+++.----- -.----- ---.>>+++++ +++
 ++.++++
 "

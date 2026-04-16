@@ -2,7 +2,7 @@
 op_inc_ptr <- function(ctx) {
   ctx$ptr <- ctx$ptr + 1
   if (ctx$ptr > length(ctx$mem)) {
-    ctx$mem <- c(ctx$mem, integer(16)) 
+    ctx$mem <- c(ctx$mem, integer(16))
   }
   ctx$pc <- ctx$pc + 1
   return(ctx)
@@ -52,9 +52,12 @@ op_jmp_bkd <- function(ctx) {
   return(ctx)
 }
 
-# input 1 character
+# get 1 character
 op_get_chr <- function(ctx) {
-  chr <- readline()
+  chr <- readline("??? ")
+  if (chr == "") {
+    chr <- "\n"
+  }
   chr_ascii <- utf8ToInt(chr)[[1]]
   ctx$mem[ctx$ptr] <- chr_ascii
   ctx$pc <- ctx$pc + 1

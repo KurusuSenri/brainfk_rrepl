@@ -5,21 +5,43 @@ init <- function() {
     ptr = 1,
     pc = 1,
     ins = c(),
-    jmp_tbl = integer(0)
+    jmp_tbl = integer(0),
+    history = list()
   )
   return(ctx)
 }
 
 # append new instructions to context and generate new jump table
-load_ins <- function(ctx, ins){
+load_ins <- function(ctx, ins) {
   ins <- c(ctx$ins, ins)
   ctx <- list(
     mem = ctx$mem,
     ptr = ctx$ptr,
     pc = ctx$pc,
     ins = ins,
-    jmp_tbl = gen_jmp_tbl(ins)
+    jmp_tbl = gen_jmp_tbl(ins),
+    history = ctx$history
   )
+  return(ctx)
+}
+
+# save context history
+save_history <- function(ctx) {
+  snapshot <- ctx
+  snapshot$history <- NULL
+  ctx$history[[length(ctx$history) + 1]] <- snapshot
+  return(ctx)
+}
+
+# load context history
+load_history <- function(ctx) {
+  all_history <- ctx$history
+  if(length(all_history) == 0){
+    return(ctx)
+  }
+  last_state <- all_history[[length(all_history)]]
+  ctx <- last_state
+  ctx$history <- all_history[-length(all_history)]
   return(ctx)
 }
 
@@ -35,12 +57,12 @@ eval <- function(ctx) {
     "[" = op_jmp_fwd,
     "]" = op_jmp_bkd
   )
-  
-  while(ctx$pc <= length(ctx$ins)) {
+
+  while (ctx$pc <= length(ctx$ins)) {
     token <- ctx$ins[ctx$pc]
     ctx <- ops[[token]](ctx)
   }
-  
+
   return(ctx)
 }
 
@@ -52,7 +74,7 @@ tokenize_bf <- function(input_str) {
   return(clean_vec)
 }
 
-# check whether square brackets match 
+# check whether square brackets match
 chk_bkt_map <- function(ins) {
   n <- 0
   for (tkn in ins) {
@@ -69,12 +91,11 @@ chk_bkt_map <- function(ins) {
 gen_jmp_tbl <- function(code) {
   jmp_tbl <- integer(length(code))
   stack <- integer()
-  for(i in 1:length(code)){
+  for (i in 1:length(code)) {
     tkn <- code[[i]]
     if (tkn == "[") {
       stack <- c(stack, i)
-    }
-    else if(tkn == "]"){
+    } else if (tkn == "]") {
       left_idx <- tail(stack, 1)
       stack <- head(stack, -1)
       jmp_tbl[left_idx] <- i
@@ -86,7 +107,7 @@ gen_jmp_tbl <- function(code) {
 
 # print user friendly registers
 dbg_print_reg <- function(ctx) {
-  cat(sprintf("ptr: %04d val: %04d pc: %04d\n", ctx$ptr - 1, ctx$mem[ctx$ptr], ctx$pc))
+  cat(sprintf("ptr: %04d val: %04d pc: %04d\n", ctx$ptr - 1, ctx$mem[ctx$ptr], ctx$pc - 1))
 }
 
 # print user friendly memory
@@ -95,17 +116,17 @@ dbg_print_mem <- function(ctx) {
   mem_len <- length(ctx$mem)
   num_row <- mem_len %/% cells
   cat("mem:\n")
-  for(row in 1:num_row){
+  for (row in 1:num_row) {
     cat(sprintf("[%04d] ", (row - 1) * cells))
-    for(col in 1:cells){
+    for (col in 1:cells) {
       cat(sprintf("%04d ", ctx$mem[(row - 1) * cells + col]))
     }
     cat(" | ")
-    for(col in 1:cells) {
+    for (col in 1:cells) {
       idx <- (row - 1) * cells + col
       if (idx <= mem_len) {
         val <- ctx$mem[idx]
-        char <- if(val >= 32 && val <= 126) intToUtf8(val) else "."
+        char <- if (val >= 32 && val <= 126) intToUtf8(val) else "."
         cat(char)
       }
     }
@@ -117,6 +138,11 @@ dbg_print_mem <- function(ctx) {
 dbg_print_ins <- function(ctx) {
   ins_vec <- ctx$ins
   len <- length(ins_vec)
+  if(len == 0){
+    cat("ins:\n")
+    cat("jmp_tbl:\n")
+    return()
+  }
   cells <- 32
   cat("ins:\n")
   num_rows <- ceiling(len / cells)
@@ -133,7 +159,7 @@ dbg_print_ins <- function(ctx) {
     }
     cat("\n")
   }
-  
+
   cat("jmp_tbl:\n")
   active_indices <- which(ctx$jmp_tbl != 0)
   for (i in active_indices) {

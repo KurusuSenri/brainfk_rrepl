@@ -22,3 +22,9 @@ repl()
 
 ![](./demo_repl.png)  
 
+## Features
+
+- Dynamic memory size
+- Undo at anytime
+
+![](./demo_undo.png)
